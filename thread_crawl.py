@@ -27,7 +27,6 @@ def thread_crawl(save_dir=None):
 
 
 def main():
-    # Temporary remove Gossiping
     threads = []
     num_of_thread = 5
     for i in range(num_of_thread):
