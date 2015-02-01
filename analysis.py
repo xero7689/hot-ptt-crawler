@@ -19,12 +19,13 @@ comment_threshold = 20
 
 
 def num_of_article(board_name):
-    nd = os.listdir(os.path.join(new_path, board_name))
-    od = os.listdir(os.path.join(old_path, board_name))
-
-    noa_dev = len(nd) - len(od)
-    return board_name, noa_dev
-
+    try:
+        nd = os.listdir(os.path.join(new_path, board_name))
+        od = os.listdir(os.path.join(old_path, board_name))
+        noa_dev = len(nd) - len(od)
+        return board_name, noa_dev
+    except:
+        return ()
 
 
 def popular():
@@ -32,6 +33,7 @@ def popular():
     """
     new_board = []
     rank_up = []
+    threshold = 1.5
     old = open(os.path.join(old_path, board_meta_data))
     new = open(os.path.join(new_path, board_meta_data))
 
@@ -49,17 +51,20 @@ def popular():
         if newkey[i] in oldkey:
             for j in range(0, len(oldkey)-1):
                 if oldkey[j] == newkey[i]:
-                    if newvalue[i] < oldvalue[j]:
+                    if (newvalue[i][0] < oldvalue[j][0]) or (newvalue[i][0] == 1):
                         # rank up board
-                        rank_up.append(newkey[i])
+                        if float(newvalue[i][1])/float(oldvalue[j][1]) > threshold:
+                            rank_up.append(newkey[i])
         else:
             # new hot board
             new_board.append(newkey[i])
+    old.close()
+    new.close()
 
     return rank_up, new_board
 
 
-def compare_comment():
+def popular_comment():
     """This is a generator which compare the pushes between new article and old article, and yield the file name if it's
     deviation is larger than threshold.
     """
@@ -116,9 +121,11 @@ def find_same_article():
 
 
 def main():
-    rk, nb = num_of_article("LoL")
-    print rk
-    print nb
-
+    pc = popular_comment()
+    while True:
+        try:
+            print pc.next()
+        except Exception as e:
+            break
 if __name__ == "__main__":
     main()

@@ -109,7 +109,6 @@ class PttCrawler():
                 try:
                     dl = article['date'].split(" ")
                     adl = []
-                    print dl
 
                     # Sometimes the element u'' will exist in the list and cause bug.
                     # , so I use this for loop to clean such element.
