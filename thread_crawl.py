@@ -9,6 +9,7 @@ import Queue
 import os
 import json
 import time
+import urllib2
 
 boards_queue = Queue.Queue(maxsize=0)
 work_path = os.path.curdir
@@ -27,18 +28,59 @@ def thread_crawl(save_dir=None):
         except Exception as e:
             print e.message
 
+import urllib2,urllib
+import json
+
+
+def pushMessage():
+    GCM_SERVER = "https://android.googleapis.com/gcm/send"
+    output_data = json.loads(open("./www/output.json","r").read())
+    if len(output_data["board"])==0 and len(output_data["article"])==0:
+        return None
+    # output report html file
+    with open("./www/module.html") as f:
+                mod = f.read()
+    hot_board = ""
+    if len(output_data["board"]) != 0:
+        board_list = ""
+        for b in output_data["board"]:
+            board_list += u'<li><a href="https://www.ptt.cc/bbs/%s/index.html">%s</a></li>' % (b, b)
+        hot_board = mod % (u"熱門討論版", board_list)
+
+    hot_article = ""
+    if len(output_data["article"]) != 0:
+        article_list = ""
+        for a in output_data["article"]:
+            article_list += u'<li><a href="https://www.ptt.cc/bbs%s">%s</a></li>' % (a["url"][5:], a["title"])
+        hot_article = mod % (u"熱門文章", article_list)
+
+    with open("./www/index-form.html", "r") as f:
+        form = f.read()
+    with open("./www/index.html","w") as f:
+        f.write(form % (hot_board.encode("utf-8"), hot_article.encode("utf-8")))
+    # push message to user
+    regId = [i.replace("\n", "") for i in open("id.txt", "r")]
+    print regId
+    json_data = {"data": {"msg": "http://140.127.208.93:8080/"}, "registration_ids": regId}
+    data = json.dumps(json_data)
+    headers = {'Content-Type': 'application/json',
+    'Authorization': "key=AIzaSyAMZpkMhkF_k1clAbrK5ovDjy6fPBZTwyw"}
+    req = urllib2.Request(GCM_SERVER, data, headers)
+    res = urllib2.urlopen(req)
+    response = json.loads(res.read())
+
 
 def main():
     while True:
         try:
             # Crawling
-            """
             print "Get hot board"
             boards = hotboard.hotboard()
             boards = boards[:5]
             for board in boards:
                 boards_queue.put(board)
 
+            # Thread Crawling
             threads = []
             num_of_thread = 5
             for i in range(num_of_thread):
@@ -47,9 +89,9 @@ def main():
                 ct.start()
             for thread in threads:
                 thread.join()
-            """
 
-            """ Analysis """
+
+            # Analysis
             up_rank_board, new_board = analysis.popular()
             print up_rank_board
             print new_board
@@ -94,6 +136,9 @@ def main():
             with open(fn, "w") as f:
                 json.dump(output_dict, f)
 
+            # Send to android user
+            pushMessage()
+
             # modify dir
             old_path = os.path.join(work_path, "old")
             new_path = os.path.join(work_path, "new")
@@ -101,7 +146,6 @@ def main():
             os.rename(old_path, bak_path)
             os.rename(new_path, old_path)
 
-            break
         except Exception as e:
             print e.message
             break
