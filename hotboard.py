@@ -1,10 +1,13 @@
-#-*-coding:UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 import urllib2
 import re
 import json
+import os
 from bs4 import BeautifulSoup
 from collections import OrderedDict
+
+save_path = os.path.join(os.path.curdir, "new")
 
 def hotboard():
     url = "https://www.ptt.cc/hotboard.html"
@@ -16,30 +19,24 @@ def hotboard():
     output = OrderedDict()
     p = re.compile(r'<.*?>')
 
-    # 版名(finish)
     for lind in soup.find_all('td', {'width':'120'}):
         temp = p.sub('', lind.renderContents().strip())
         if flag % 2 == 0:
             board.append(temp)
-        flag = flag + 1
+        flag += 1
 
-    # 人氣(finish)
-    for lind in soup.find_all('td',{'width':'100'}):
-        temp = p.sub('',lind.renderContents().strip())
+    for lind in soup.find_all('td', {'width': '100'}):
+        temp = p.sub('', lind.renderContents().strip())
         popular.append(temp[9:16])
 
-    # 輸出json
     for i in range(0,len(board)-1):
         output[board[i]] = (i + 1, popular[i])
-        # (版名：(排名：人氣))
-        # print board[i]
 
     data_string = json.dumps(output)
 
-    # 輸出檔案
-    f = open('hotboard.json', 'w')
+    fn = os.path.join(save_path, "hotboard.json")
+    f = open(fn, 'w')
     f.write(data_string)
     f.close()
 
-    # Call pttCrawler
     return board

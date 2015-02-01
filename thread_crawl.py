@@ -145,6 +145,7 @@ def main():
             bak_path = os.path.join(work_path, "old_" + backup_name)
             os.rename(old_path, bak_path)
             os.rename(new_path, old_path)
+            os.mkdir(new_path)
 
             # backup index.html
             index_bak_path = os.path.join(output_path, "index_bak")
