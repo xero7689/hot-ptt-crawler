@@ -10,7 +10,8 @@ import os
 import json
 import time
 import urllib2
-
+import urllib
+import json
 boards_queue = Queue.Queue(maxsize=0)
 work_path = os.path.curdir
 output_path = os.path.join(work_path, 'www')
@@ -27,10 +28,7 @@ def thread_crawl(save_dir=None):
             crawler.run()
         except Exception as e:
             print e.message
-
-import urllib2,urllib
-import json
-
+            
 
 def pushMessage():
     GCM_SERVER = "https://android.googleapis.com/gcm/send"
