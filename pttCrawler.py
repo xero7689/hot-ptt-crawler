@@ -35,7 +35,7 @@ class PttCrawler():
 
         # Url Request Setting
         self.opener = self.create_opener()
-        self.delay = 0.2
+        self.delay = 0.5
 
         # Data Path Setting
         self.working_path = os.path.dirname(os.path.abspath(__file__))

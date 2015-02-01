@@ -7,11 +7,11 @@ import analysis
 import threading
 import Queue
 import os
-import json
 import time
 import urllib2
-import urllib
 import json
+import shutil
+
 boards_queue = Queue.Queue(maxsize=0)
 work_path = os.path.curdir
 output_path = os.path.join(work_path, 'www')
@@ -28,7 +28,7 @@ def thread_crawl(save_dir=None):
             crawler.run()
         except Exception as e:
             print e.message
-            
+
 
 def pushMessage():
     GCM_SERVER = "https://android.googleapis.com/gcm/send"
@@ -137,16 +137,27 @@ def main():
             # Send to android user
             pushMessage()
 
-            # modify dir
+            # backup old dir
+            backup_name = '_'.join([x for x in time.ctime().split(' ') if x != ''][1:])
+
             old_path = os.path.join(work_path, "old")
             new_path = os.path.join(work_path, "new")
-            bak_path = os.path.join(work_path, "old_" + '_'.join([x for x in time.ctime().split(' ') if x != ''][1:]))
+            bak_path = os.path.join(work_path, "old_" + backup_name)
             os.rename(old_path, bak_path)
             os.rename(new_path, old_path)
 
+            # backup index.html
+            index_bak_path = os.path.join(output_path, "index_bak")
+            index_bak_fn = os.path.join(index_bak_path, "index_" + backup_name)
+            index_path = os.path.join(output_path, "index.html")
+            if not os.path.isdir(index_bak_path):
+                os.mkdir(index_bak_path)
+            if os.path.isfile(index_path):
+                shutil.copy(index_path, index_bak_fn)
+
         except Exception as e:
             print e.message
-            break
+            # break
 
 if __name__ == "__main__":
     main()
